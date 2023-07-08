@@ -1,0 +1,104 @@
+Param(
+		[Parameter(Mandatory=$false,Position=0)] 
+		[ValidateNotNullOrEmpty()]
+		[string]$LockScreenSource,
+        [Parameter(Mandatory=$false,Position=1)] 
+		[ValidateNotNullOrEmpty()]
+		[string]$BackgroundSource,
+        [Parameter(Mandatory=$false,Position=2)] 
+		[ValidateNotNullOrEmpty()]
+		[string]$LogPath
+	)
+
+#Requires -RunAsAdministrator
+
+#Open the folder en Windows Explorer under C:\Users\USERNAME\AppData\Roaming\FileyChildcare
+########################################################################################
+$path = [Environment]::GetFolderPath('ApplicationData') + "\FileyChildcare"
+
+If(!(test-path $path))
+{
+      New-Item -ItemType Directory -Force -Path $path
+}
+########################################################################################
+if (-not [string]::IsNullOrWhiteSpace($path)) {
+    Start-Transcript -Path "$($path)\$($env:COMPUTERNAME).log" | Out-Null
+}
+Write-Host Get-Date
+
+#Download the image from ImGur to user profile
+########################################################################################
+$url = "https://i.imgur.com/gZqEwLj.png"
+$output = $path + "\CustomerBackground.png"
+#Start-BitsTransfer -Source $url -Destination $output
+$wc = New-Object System.Net.WebClient
+$wc.DownloadFile($url, $output)
+
+########################################################################################
+$LockScreenSource = $output
+$BackgroundSource = $output
+
+
+
+$ErrorActionPreference = "Stop"
+
+$RegKeyPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\PersonalizationCSP"
+
+$DesktopPath = "DesktopImagePath"
+$DesktopStatus = "DesktopImageStatus"
+$DesktopUrl = "DesktopImageUrl"
+$LockScreenPath = "LockScreenImagePath"
+$LockScreenStatus = "LockScreenImageStatus"
+$LockScreenUrl = "LockScreenImageUrl"
+
+$StatusValue = "1"
+$DesktopImageValuePath = "C:\Windows\System32\oobe\"
+$LockScreenImageValuePath = "C:\Windows\System32\oobe\info\backgrounds\"
+$DesktopImageValue = "C:\Windows\System32\oobe\Desktop.jpg"
+$LockScreenImageValue = "C:\Windows\System32\oobe\info\backgrounds\LockScreen.jpg"
+
+If(!(test-path $DesktopImageValuePath))
+{
+      New-Item -ItemType Directory -Force -Path $DesktopImageValuePath
+}
+If(!(test-path $LockScreenImageValuePath))
+{
+      New-Item -ItemType Directory -Force -Path $LockScreenImageValuePath
+}
+
+if (!$LockScreenSource -and !$BackgroundSource) 
+{
+    Write-Host "Either LockScreenSource or BackgroundSource must has a value."
+}
+else 
+{
+    if(!(Test-Path $RegKeyPath)) {
+        Write-Host "Creating registry path $($RegKeyPath)."
+        New-Item -Path $RegKeyPath -Force | Out-Null
+    }
+    if ($LockScreenSource) {
+  	Write-Host "Copy Lock Screen image from $($LockScreenSource) to $($LockScreenImageValue)."
+        Copy-Item $LockScreenSource $LockScreenImageValue -Force
+        Write-Host "Creating registry entries for Lock Screen"
+        New-ItemProperty -Path $RegKeyPath -Name $LockScreenStatus -Value $StatusValue -PropertyType DWORD -Force | Out-Null
+        New-ItemProperty -Path $RegKeyPath -Name $LockScreenPath -Value $LockScreenImageValue -PropertyType STRING -Force | Out-Null
+        New-ItemProperty -Path $RegKeyPath -Name $LockScreenUrl -Value $LockScreenImageValue -PropertyType STRING -Force | Out-Null
+    }
+    if ($BackgroundSource) {
+        Write-Host "Copy Desktop Background image from $($BackgroundSource) to $($DesktopImageValue)."
+        Copy-Item $BackgroundSource $DesktopImageValue -Force
+        Write-Host "Creating registry entries for Desktop Background"
+        New-ItemProperty -Path $RegKeyPath -Name $DesktopStatus -Value $StatusValue -PropertyType DWORD -Force | Out-Null
+        New-ItemProperty -Path $RegKeyPath -Name $DesktopPath -Value $DesktopImageValue -PropertyType STRING -Force | Out-Null
+        New-ItemProperty -Path $RegKeyPath -Name $DesktopUrl -Value $DesktopImageValue -PropertyType STRING -Force | Out-Null
+    }  
+}
+
+if (-not [string]::IsNullOrWhiteSpace($path)){Stop-Transcript}
+
+
+
+
+
+
+
