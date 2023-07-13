@@ -26,16 +26,20 @@ if (-not [string]::IsNullOrWhiteSpace($path)) {
 }
 Write-Host Get-Date
 
-#Download the image from ImGur to user profile
+#Download the image from Github FCL to user profile
 ########################################################################################
-$url = "https://i.imgur.com/gZqEwLj.png"
+#$url = "https://i.imgur.com/gZqEwLj.png"
+$url = "https://github.com/Thor21B/FCL/blob/main/desktopBackground.png?raw=true"
+$url2 = "https://github.com/Thor21B/FCL/blob/main/NewBackground1.png?raw=true"
 $output = $path + "\CustomerBackground.png"
+$output2 = $path +"\CustomerLockscreen.png"
 #Start-BitsTransfer -Source $url -Destination $output
+
 $wc = New-Object System.Net.WebClient
 $wc.DownloadFile($url, $output)
-
+$wc.DownloadFile($url2, $output2)
 ########################################################################################
-$LockScreenSource = $output
+$LockScreenSource = $output2
 $BackgroundSource = $output
 
 
@@ -54,8 +58,8 @@ $LockScreenUrl = "LockScreenImageUrl"
 $StatusValue = "1"
 $DesktopImageValuePath = "C:\Windows\System32\oobe\"
 $LockScreenImageValuePath = "C:\Windows\System32\oobe\info\backgrounds\"
-$DesktopImageValue = "C:\Windows\System32\oobe\Desktop.jpg"
-$LockScreenImageValue = "C:\Windows\System32\oobe\info\backgrounds\LockScreen.jpg"
+$DesktopImageValue = "C:\Windows\System32\oobe\Desktop.png"
+$LockScreenImageValue = "C:\Windows\System32\oobe\info\backgrounds\LockScreen.png"
 
 If(!(test-path $DesktopImageValuePath))
 {
