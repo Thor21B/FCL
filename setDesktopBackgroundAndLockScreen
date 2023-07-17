@@ -20,6 +20,11 @@ If(!(test-path $path))
 {
       New-Item -ItemType Directory -Force -Path $path
 }
+If(!(test-path $path))
+{
+      throw "FileyChildcare directory doesn't exist!!!!"
+      exit
+}
 ########################################################################################
 if (-not [string]::IsNullOrWhiteSpace($path)) {
     Start-Transcript -Path "$($path)\$($env:COMPUTERNAME).log" | Out-Null
